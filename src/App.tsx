@@ -46,24 +46,29 @@ export default function App() {
       const genAI = new GoogleGenAI({ apiKey });
       const model = "gemini-3-flash-preview";
 
-      const prompt = `Actúa como un experto pedagogo mexicano especializado en el Plan de Estudios 2022 de la Nueva Escuela Mexicana.
+      const prompt = `Actúa como un experto pedagogo mexicano especializado en el Plan de Estudios 2022 de la Nueva Escuela Mexicana (NEM).
       Genera una planeación didáctica detallada para PRIMER GRADO de primaria.
       
       DATOS CURRICULARES:
       - Campo Formativo: ${selectedCampo.nombre}
       - Contenido: ${selectedContenido.titulo}
       - Proceso de Desarrollo de Aprendizaje (PDA): ${selectedPDA.descripcion}
+      ${selectedPDA.actividades ? `- Actividades sugeridas como base: ${selectedPDA.actividades.join(', ')}` : ''}
       
       ESTRUCTURA REQUERIDA:
-      1. Título del Proyecto (Creativo y motivador).
-      2. Justificación Pedagógica (Breve explicación de por qué es importante este tema).
-      3. Metodología Sugerida (Aprendizaje Basado en Proyectos, Indagación, Problemas o Servicio).
-      4. Secuencia Didáctica (Inicio, Desarrollo, Cierre) con actividades específicas para niños de 6-7 años.
-      5. Evaluación Formativa (Instrumentos y criterios).
-      6. Recursos Necesarios.
-      7. Ajustes Razonables (Inclusión).
+      1. Título del Proyecto
+      2. Justificación Pedagógica
+      3. Metodología Sugerida
+      4. Secuencia Didáctica (Inicio, Desarrollo, Cierre)
+      5. Evaluación Formativa
+      6. Recursos Necesarios
+      7. Ajustes Razonables
       
-      Usa un tono profesional pero accesible. Formatea la respuesta con Markdown claro.`;
+      INSTRUCCIONES IMPORTANTES:
+      - NO incluyas saludos ni introducciones conversacionales.
+      - Comienza directamente con el Título del Proyecto.
+      - Utiliza un tono profesional y técnico.
+      - Formatea la respuesta con Markdown claro y profesional.`;
 
       const result = await genAI.models.generateContent({
         model,
@@ -186,21 +191,42 @@ export default function App() {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
+                    className="space-y-4"
                   >
-                    <label className="block text-xs font-bold text-stone-700 mb-1 ml-1">PDA (Proceso de Desarrollo)</label>
-                    <select 
-                      className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all appearance-none"
-                      onChange={(e) => {
-                        const pda = pdasDisponibles.find(p => p.id === e.target.value);
-                        setSelectedPDA(pda || null);
-                      }}
-                      value={selectedPDA?.id || ""}
-                    >
-                      <option value="">Selecciona un PDA...</option>
-                      {pdasDisponibles.map(pda => (
-                        <option key={pda.id} value={pda.id}>{pda.descripcion}</option>
-                      ))}
-                    </select>
+                    <div>
+                      <label className="block text-xs font-bold text-stone-700 mb-1 ml-1">PDA (Proceso de Desarrollo)</label>
+                      <select 
+                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all appearance-none"
+                        onChange={(e) => {
+                          const pda = pdasDisponibles.find(p => p.id === e.target.value);
+                          setSelectedPDA(pda || null);
+                        }}
+                        value={selectedPDA?.id || ""}
+                      >
+                        <option value="">Selecciona un PDA...</option>
+                        {pdasDisponibles.map(pda => (
+                          <option key={pda.id} value={pda.id}>{pda.descripcion}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {selectedPDA?.actividades && (
+                      <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="bg-emerald-50/50 border border-emerald-100 rounded-xl p-4"
+                      >
+                        <h4 className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest mb-2">Actividades Sugeridas</h4>
+                        <ul className="space-y-2">
+                          {selectedPDA.actividades.map((act, idx) => (
+                            <li key={idx} className="text-xs text-emerald-900 flex gap-2">
+                              <span className="text-emerald-400 font-bold">•</span>
+                              {act}
+                            </li>
+                          ))}
+                        </ul>
+                      </motion.div>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
