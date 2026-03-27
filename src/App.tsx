@@ -8,10 +8,13 @@ import {
   Share2, 
   Sparkles, 
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Download
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CURRICULO, CampoFormativo, Contenido, PDA } from './constants';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
+import { saveAs } from 'file-saver';
 
 export default function App() {
   const [selectedCampo, setSelectedCampo] = useState<CampoFormativo | null>(null);
@@ -107,6 +110,63 @@ export default function App() {
       } catch (err) {
         console.error('Error al copiar:', err);
       }
+    }
+  };
+
+  const handleDownloadWord = async () => {
+    if (!plan) return;
+
+    const sections = plan.split('\n');
+    const children: any[] = [];
+
+    // Add a title
+    children.push(
+      new Paragraph({
+        text: "Planeación Didáctica - 1° Primaria",
+        heading: HeadingLevel.HEADING_1,
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 400 },
+      })
+    );
+
+    sections.forEach((line) => {
+      const trimmed = line.trim();
+      if (!trimmed) return;
+
+      if (trimmed.startsWith('# ')) {
+        children.push(new Paragraph({ text: trimmed.replace('# ', ''), heading: HeadingLevel.HEADING_1, spacing: { before: 400, after: 200 } }));
+      } else if (trimmed.startsWith('## ')) {
+        children.push(new Paragraph({ text: trimmed.replace('## ', ''), heading: HeadingLevel.HEADING_2, spacing: { before: 300, after: 150 } }));
+      } else if (trimmed.startsWith('### ')) {
+        children.push(new Paragraph({ text: trimmed.replace('### ', ''), heading: HeadingLevel.HEADING_3, spacing: { before: 200, after: 100 } }));
+      } else if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+        children.push(new Paragraph({ text: trimmed.substring(2), bullet: { level: 0 }, spacing: { after: 100 } }));
+      } else {
+        // Basic bold handling
+        const parts = trimmed.split(/(\*\*.*?\*\*)/g);
+        const textRuns = parts.map(part => {
+          if (part.startsWith('**') && part.endsWith('**')) {
+            return new TextRun({ text: part.slice(2, -2), bold: true });
+          }
+          return new TextRun(part);
+        });
+        children.push(new Paragraph({ children: textRuns, spacing: { after: 200 } }));
+      }
+    });
+
+    const doc = new Document({
+      sections: [{
+        properties: {},
+        children: children,
+      }],
+    });
+
+    try {
+      const blob = await Packer.toBlob(doc);
+      saveAs(blob, `Planeacion_1_Primaria_${new Date().getTime()}.docx`);
+    } catch (err) {
+      console.error('Error al generar Word:', err);
+      setError("No se pudo generar el archivo Word.");
     }
   };
 
@@ -270,22 +330,31 @@ export default function App() {
               <>
                 <div className="p-4 border-b border-stone-100 flex items-center justify-between bg-stone-50/50">
                   <span className="text-xs font-bold text-stone-500 uppercase tracking-widest">Planeación Generada</span>
-                  <button
-                    onClick={handleShare}
-                    className="flex items-center gap-2 px-4 py-2 bg-white border border-stone-200 rounded-lg text-xs font-bold hover:bg-stone-50 transition-colors"
-                  >
-                    {copySuccess ? (
-                      <>
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                        Copiado
-                      </>
-                    ) : (
-                      <>
-                        <Share2 className="w-4 h-4" />
-                        Compartir Texto
-                      </>
-                    )}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleDownloadWord}
+                      className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors shadow-sm"
+                    >
+                      <Download className="w-4 h-4" />
+                      Descargar Word
+                    </button>
+                    <button
+                      onClick={handleShare}
+                      className="flex items-center gap-2 px-4 py-2 bg-white border border-stone-200 rounded-lg text-xs font-bold hover:bg-stone-50 transition-colors"
+                    >
+                      {copySuccess ? (
+                        <>
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                          Copiado
+                        </>
+                      ) : (
+                        <>
+                          <Share2 className="w-4 h-4" />
+                          Compartir Texto
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
                 <div className="p-8 prose prose-stone max-w-none prose-headings:font-bold prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg">
                   <Markdown>{plan}</Markdown>
