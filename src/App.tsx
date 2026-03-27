@@ -67,7 +67,9 @@ export default function App() {
       6. Recursos Necesarios
       7. Ajustes Razonables
       
-      INSTRUCCIONES IMPORTANTES:
+      INSTRUCCIONES DE CONTEXTO Y ESTILO:
+      - ADAPTACIÓN CULTURAL: Adapta todos los ejemplos de actividades y recursos al contexto cultural y social de México.
+      - REALIDAD MEXICANA: Evita referencias genéricas. Prioriza elementos propios de la realidad mexicana como festividades (Día de Muertos, Independencia, etc.), personajes históricos relevantes para primaria (Benito Juárez, Josefa Ortiz de Domínguez, etc.), o elementos específicos del Plan de Estudios 2022.
       - NO incluyas saludos ni introducciones conversacionales.
       - Comienza directamente con el Título del Proyecto.
       - Utiliza un tono profesional y técnico.
