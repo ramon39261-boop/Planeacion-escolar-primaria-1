@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react';
-import { GoogleGenAI } from "@google/genai";
 import Markdown from 'react-markdown';
 import { 
   BookOpen, 
@@ -12,6 +11,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CURRICULO, CampoFormativo, Contenido, PDA } from './constants';
+import { generateEducationalPlan } from './services/geminiService';
 
 export default function App() {
   const [selectedCampo, setSelectedCampo] = useState<CampoFormativo | null>(null);
@@ -38,44 +38,8 @@ export default function App() {
     setError(null);
 
     try {
-      const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey) {
-        throw new Error("La clave de API de Gemini no está configurada. Por favor, asegúrate de que esté en el panel de Secrets.");
-      }
-
-      const genAI = new GoogleGenAI({ apiKey });
-      const model = "gemini-3-flash-preview";
-
-      const prompt = `Actúa como un experto pedagogo mexicano especializado en el Plan de Estudios 2022 de la Nueva Escuela Mexicana (NEM).
-      Genera una planeación didáctica detallada para PRIMER GRADO de primaria.
-      
-      DATOS CURRICULARES:
-      - Campo Formativo: ${selectedCampo.nombre}
-      - Contenido: ${selectedContenido.titulo}
-      - Proceso de Desarrollo de Aprendizaje (PDA): ${selectedPDA.descripcion}
-      ${selectedPDA.actividades ? `- Actividades sugeridas como base: ${selectedPDA.actividades.join(', ')}` : ''}
-      
-      ESTRUCTURA REQUERIDA:
-      1. Título del Proyecto
-      2. Justificación Pedagógica
-      3. Metodología Sugerida
-      4. Secuencia Didáctica (Inicio, Desarrollo, Cierre)
-      5. Evaluación Formativa
-      6. Recursos Necesarios
-      7. Ajustes Razonables
-      
-      INSTRUCCIONES IMPORTANTES:
-      - NO incluyas saludos ni introducciones conversacionales.
-      - Comienza directamente con el Título del Proyecto.
-      - Utiliza un tono profesional y técnico.
-      - Formatea la respuesta con Markdown claro y profesional.`;
-
-      const result = await genAI.models.generateContent({
-        model,
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-      });
-
-      setPlan(result.text || "No se pudo generar el contenido.");
+      const result = await generateEducationalPlan(selectedCampo, selectedContenido, selectedPDA);
+      setPlan(result);
     } catch (err: any) {
       console.error(err);
       setError(err.message || "Ocurrió un error inesperado.");
