@@ -6,7 +6,7 @@ export const generateEducationalPlan = async (
   contenido: Contenido,
   pda: PDA
 ): Promise<string> => {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.VITE_API_KEY;
   if (!apiKey) {
     throw new Error("La clave de API de Gemini no está configurada. Por favor, asegúrate de que esté en el panel de Secrets.");
   }
